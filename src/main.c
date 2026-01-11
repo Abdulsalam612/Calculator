@@ -3,6 +3,7 @@
 #include "PLL.h"
 #include "SysTick.h"
 #include "calculator.h"
+#include "password.h"
 
 #include "keypad.h"
 #include "lcd.h"
@@ -17,17 +18,30 @@ int main(void) {
   keypadInit();
   Calc_Init();
 
-  // Intro
+  // Intro (Show this FIRST)
   printDisplay("Salam Calculator");
   SysTick_Wait10ms(200); // 2s
-  lcdClearScreen();
+
+  // Then Lock
+  Password_Init(); // Clears screen and shows LOCKED
 
   while (1) {
     unsigned char key = readKeypad();
     if (key != 0) {
       char c = decodeKeyPress(key);
-      Calc_ProcessKey(c);   // Pass to Calculator Engine
-      SysTick_Wait10ms(30); // Debounce 300ms
+
+      if (Password_IsUnlocked()) {
+        // Check for Change Password Command: Shift + #
+        if (c == '#' && Calc_IsShiftActive()) {
+          Password_Change();
+        } else {
+          Calc_ProcessKey(c); // Normal Calculator Mode
+        }
+      } else {
+        Password_Check(c); // Locked Mode
+      }
+
+      SysTick_Wait10ms(30); // Debounce
     }
   }
 }

@@ -239,7 +239,10 @@ void Calc_Evaluate(void) {
 // --- Public Interface ---
 void Calc_Init(void) { Calc_Reset(); }
 
+int Calc_IsShiftActive(void) { return g_shiftActive; }
+
 void Calc_ProcessKey(char key) {
+
   if (g_resetOnNextKey) {
     if (key == '#')
       return; // Ignore repeated equals

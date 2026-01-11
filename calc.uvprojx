@@ -416,6 +416,16 @@
               <FilePath>.\src\calculator.c</FilePath>
             </File>
             <File>
+              <FileName>password.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\password.c</FilePath>
+            </File>
+            <File>
+              <FileName>Flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Flash.c</FilePath>
+            </File>
+            <File>
               <FileName>texas.o</FileName>
               <FileType>3</FileType>
               <FilePath>.\texas.o</FilePath>
