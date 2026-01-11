@@ -7,8 +7,9 @@
 #ifndef CALCULATOR_H_
 #define CALCULATOR_H_
 
-// Initialize Calculator
+// Initialize Calculator (Same as Reset)
 void Calc_Init(void);
+void Calc_Reset(void);
 
 // Process Key Input
 void Calc_ProcessKey(char key);
