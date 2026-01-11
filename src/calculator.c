@@ -19,7 +19,9 @@
 static char g_inputBuffer[MAX_EXPR_LEN];
 static int g_bufferIndex = 0;
 static int g_resetOnNextKey = 0;
-static int g_shiftActive = 0; // 0=Off, 1=On
+
+static int g_shiftActive = 0;  // 0=Off, 1=On
+static double g_lastAns = 0.0; // Store last result
 
 // Stacks for Evaluation
 static double valStack[MAX_STACK];
@@ -228,6 +230,9 @@ void Calc_Evaluate(void) {
     sprintf(outStr, "= %.3f", result);
   }
 
+  // Store Result in Ans
+  g_lastAns = result;
+
   // lcdGoto next line?
   // Let's just print it. The string has wrapping now.
   lcdWriteData(' ');    // Space before equals
@@ -292,27 +297,45 @@ void Calc_ProcessKey(char key) {
   if (g_shiftActive) {
     // SHIFT MAPPINGS
     switch (key) {
-    case 'A':
+    case '0':
       bufferChar = '.';
       displayChar = '.';
-      break; // Shift+A = Dot
+      break; // Shift+0 = Dot
+
+    case 'A':
+      // Shift+A = Ans (Recall)
+      {
+        char ansStr[32];
+        int len;
+        if (g_lastAns == (long)g_lastAns)
+          sprintf(ansStr, "%ld", (long)g_lastAns);
+        else
+          sprintf(ansStr, "%.3f", g_lastAns);
+
+        len = strlen(ansStr);
+
+        // Allow if buffer fits
+        if (g_bufferIndex + len < MAX_EXPR_LEN) {
+          strcpy(&g_inputBuffer[g_bufferIndex], ansStr);
+          g_bufferIndex += len;
+          printDisplay("Ans");
+          return;
+        }
+        return; // Buffer full
+      }
+
     case 'B':
       bufferChar = '^';
       displayChar = '^';
       break; // Shift+B = Power
+
     case 'C':
       bufferChar = '/';
       displayChar = '/';
       break; // Shift+C = Divide
     default:
-      // Other keys ignore shift or treat as normal?
-      // Usually Shift+Number = Number.
       break;
     }
-    // Auto-reset shift after one use? Or Sticky?
-    // User said "Shift is toggled", implying sticky.
-    // But typically modifier keys are single use.
-    // Let's make it sticky (Toggle) as requested.
   } else {
     // NORMAL MAPPINGS
     switch (key) {
@@ -328,7 +351,6 @@ void Calc_ProcessKey(char key) {
       bufferChar = '*';
       displayChar = '*';
       break;
-    // D is handled above as Toggle
     default:
       break;
     }
