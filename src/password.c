@@ -72,14 +72,17 @@ void Password_Init(void) {
   lcdCreateCustomChar(1, unlockChar);
 
   lcdClearScreen();
+  lcdCursorOff(); // Hide cursor on title screen
 
   printDisplay("--- LOCKED ");
   lcdWriteData(0); // Show Lock Icon
+
   printDisplay(" ---");
 
   lcdGoto(0x40); // Line 2
   printDisplay("Enter PIN:");
-  lcdGoto(0x14); // Line 3
+  lcdGoto(0x14);    // Line 3
+  lcdCursorBlink(); // Show cursor for PIN input
 }
 
 int Password_IsUnlocked(void) { return g_isUnlocked; }
@@ -115,16 +118,20 @@ void Password_Check(char key) {
     if (strcmp(g_enteredPin, g_correctPin) == 0) {
       g_isUnlocked = 1;
       lcdClearScreen();
+      lcdCursorOff(); // Hide during message
       printDisplay("Access Granted! ");
       lcdWriteData(1);       // Show Unlock Icon
       SysTick_Wait10ms(100); // 1s delay
       lcdClearScreen();      // Empty Canvas
+      lcdCursorBlink();      // Ready for Calc
 
       // printDisplay("Salam Calculator"); // Removed as per request
     } else {
       lcdClearScreen();
+      lcdCursorOff(); // Hide during message
       printDisplay("Wrong PIN!");
       SysTick_Wait10ms(100); // 1s delay
+
       // Reset
       g_pinIndex = 0;
       memset(g_enteredPin, 0, sizeof(g_enteredPin));
@@ -172,12 +179,13 @@ void Password_Change(void) {
         Flash_Write(FLASH_PASSWORD_ADDR, data);
 
         lcdClearScreen();
+        lcdCursorOff(); // Hide during message
         printDisplay("PIN Changed!");
         SysTick_Wait10ms(100);
 
         // Return to Calc
         lcdClearScreen(); // Empty Canvas
-        // printDisplay("Salam Calculator"); // Removed to fix UI glitch
+        lcdCursorBlink(); // Ready for Calc
         return;
       }
 

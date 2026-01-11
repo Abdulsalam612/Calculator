@@ -30,6 +30,9 @@ void lcdGoto(unsigned char address);
 void printDisplay(char *str);
 void lcdBackspace(void);
 
+void lcdCursorBlink(void);
+void lcdCursorOff(void);
+
 // Create Custom Character (0-7 locations)
 // pattern must be 8 bytes
 void lcdCreateCustomChar(unsigned char loc, unsigned char *pattern);

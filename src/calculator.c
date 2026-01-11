@@ -87,6 +87,7 @@ void Calc_Reset(void) {
   // Re-print prompt or cursor if needed, but clean slate is good.
   g_resetOnNextKey = 0;
   g_shiftActive = 0;
+  lcdCursorBlink(); // Ready for input
 }
 
 // Push value
@@ -235,6 +236,7 @@ void Calc_Evaluate(void) {
 
   // lcdGoto next line?
   // Let's just print it. The string has wrapping now.
+  lcdCursorOff();       // Hide cursor while showing result
   lcdWriteData(' ');    // Space before equals
   printDisplay(outStr); // Will wrap if needed
 

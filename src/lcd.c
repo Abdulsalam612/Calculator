@@ -100,6 +100,15 @@ static void LCD_UpdateCursor(void) {
   lcdWriteCommand(0x80 | addr);
 }
 
+// --- Cursor Commands ---
+void lcdCursorBlink(void) {
+  lcdWriteCommand(0x0F); // Display On, Cursor On, Blink On
+}
+
+void lcdCursorOff(void) {
+  lcdWriteCommand(0x0C); // Display On, Cursor Off, Blink Off
+}
+
 // --- Core Functions ---
 
 // Send an Instruction/Command to the LCD
@@ -176,8 +185,9 @@ void printDisplay(char *str) {
 void lcdCreateCustomChar(unsigned char loc, unsigned char *pattern) {
   if (loc < 8) {
     // CGRAM address = 0x40 + (Character_Location * 8)
+    int i;
     lcdWriteCommand(0x40 + (loc * 8));
-    for (int i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++) {
       lcdWriteData(pattern[i]);
     }
   }
