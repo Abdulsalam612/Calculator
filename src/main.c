@@ -25,16 +25,15 @@ int main(void) {
 
   // Intro: Loading Animation
   lcdClearScreen();
+  lcdCursorOff(); // Ensure cursor is off
   printDisplay("Loading...");
   lcdGoto(0x40); // 2nd Line
 
-  // Progress Bar Animation
+  // Progress Bar Animation (Fill remaining 3 lines = 60 chars)
   int i;
-  for (i = 0; i < 16; i++) {
-    lcdWriteData(0xFF); // Display Black Block (Standard on HD44780)
-    lcdWriteData(0xFF); // Display Block Character
-
-    SysTick_Wait10ms(5); // 50ms per block -> ~0.8s total
+  for (i = 0; i < 60; i++) {
+    lcdWriteData(0xFF);  // Display Block Character
+    SysTick_Wait10ms(2); // 20ms per block -> 1.2s total
   }
   SysTick_Wait10ms(50); // Hold for 0.5s
 
