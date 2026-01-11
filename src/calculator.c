@@ -12,9 +12,6 @@
 
 // #include <ctype.h> // Not found in some embedded envs
 
-// Helper for isdigit
-int is_digit(char c) { return (c >= '0' && c <= '9'); }
-
 #define MAX_EXPR_LEN 64
 #define MAX_STACK 32
 
@@ -29,6 +26,56 @@ static double valStack[MAX_STACK];
 static int valTop = -1;
 static char opStack[MAX_STACK];
 static int opTop = -1;
+
+// Helper for isdigit (renamed to avoid conflict)
+int my_isdigit(char c) { return (c >= '0' && c <= '9'); }
+
+int is_operator(char c) {
+  return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
+}
+
+// 0 = OK, 1 = Error
+int ValidateSyntax(void) {
+  int i;
+  int lastIsOp = 0; // 0=No, 1=Yes
+  int lastIsDot = 0;
+
+  if (g_bufferIndex == 0)
+    return 0; // Empty is safe (ignores #)
+
+  // Check start
+  if (is_operator(g_inputBuffer[0]) && g_inputBuffer[0] != '-') {
+    // Allow leading minus? Maybe. But *5 is error.
+    return 1;
+  }
+
+  for (i = 0; i < g_bufferIndex; i++) {
+    char c = g_inputBuffer[i];
+
+    if (my_isdigit(c)) {
+      lastIsOp = 0;
+      lastIsDot = 0;
+    } else if (c == '.') {
+      if (lastIsDot)
+        return 1; // .. Error
+      lastIsDot = 1;
+      lastIsOp = 0;
+    } else if (is_operator(c)) {
+      if (lastIsOp)
+        return 1; // ** Error
+      lastIsOp = 1;
+      lastIsDot = 0;
+    } else {
+      // Unknown char? Should not happen with keypad
+    }
+  }
+
+  // Ends with operator? 5+ is error
+  if (lastIsOp)
+    return 1;
+
+  return 0;
+}
 
 // --- Helper Functions ---
 void Calc_Reset(void) {
@@ -109,7 +156,15 @@ double applyOp(double a, double b, char op) {
 
 // Evaluate the buffered string
 void Calc_Evaluate(void) {
+  if (ValidateSyntax()) {
+    lcdClearScreen();
+    printDisplay("Syntax Error");
+    g_resetOnNextKey = 1;
+    return;
+  }
+
   int i;
+
   valTop = -1;
   opTop = -1;
 
@@ -120,12 +175,13 @@ void Calc_Evaluate(void) {
       continue;
 
     // If Digit or Decimal point, parse number
-    if (is_digit(g_inputBuffer[i]) || g_inputBuffer[i] == '.') {
+    if (my_isdigit(g_inputBuffer[i]) || g_inputBuffer[i] == '.') {
       char numStr[32];
       int k = 0;
       // Capture full number
       while (i < g_bufferIndex &&
-             (is_digit(g_inputBuffer[i]) || g_inputBuffer[i] == '.')) {
+             (my_isdigit(g_inputBuffer[i]) || g_inputBuffer[i] == '.')) {
+
         numStr[k++] = g_inputBuffer[i++];
       }
       numStr[k] = '\0';
@@ -167,9 +223,9 @@ void Calc_Evaluate(void) {
 
   // Check if integer (cleaner output)
   if (result == (long)result) {
-    snprintf(outStr, 32, "= %ld", (long)result);
+    sprintf(outStr, "= %ld", (long)result);
   } else {
-    snprintf(outStr, 32, "= %.3f", result);
+    sprintf(outStr, "= %.3f", result);
   }
 
   // lcdGoto next line?
