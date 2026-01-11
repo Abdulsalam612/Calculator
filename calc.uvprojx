@@ -411,6 +411,11 @@
               <FilePath>.\src\SysTick.c</FilePath>
             </File>
             <File>
+              <FileName>calculator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\calculator.c</FilePath>
+            </File>
+            <File>
               <FileName>texas.o</FileName>
               <FileType>3</FileType>
               <FilePath>.\texas.o</FilePath>

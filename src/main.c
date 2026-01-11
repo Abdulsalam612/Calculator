@@ -1,8 +1,9 @@
 // main.c
-// Calculator Project
-
+// Calculator Proje#include "keypad.h"
 #include "PLL.h"
 #include "SysTick.h"
+#include "calculator.h"
+
 #include "keypad.h"
 #include "lcd.h"
 
@@ -14,18 +15,19 @@ int main(void) {
   // Initialize Drivers
   lcdInit();
   keypadInit();
+  Calc_Init();
 
-  // Test: Print 'Salam'
-  printDisplay("Salam");
-  SysTick_Wait10ms(100); // Wait 1s
+  // Intro
+  printDisplay("Salam Calculator");
+  SysTick_Wait10ms(200); // 2s
   lcdClearScreen();
 
   while (1) {
     unsigned char key = readKeypad();
     if (key != 0) {
       char c = decodeKeyPress(key);
-      lcdWriteData(c);
-      SysTick_Wait10ms(20); // Debounce 200ms
+      Calc_ProcessKey(c);   // Pass to Calculator Engine
+      SysTick_Wait10ms(30); // Debounce 300ms
     }
   }
 }

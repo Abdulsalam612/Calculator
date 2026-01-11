@@ -173,6 +173,35 @@ void printDisplay(char *str) {
   }
 }
 
+// Deletes the previous character (Backspace)
+void lcdBackspace(void) {
+  // 1. Decrement Cursor
+  if (g_col > 0) {
+    g_col--;
+  } else {
+    // Reverse Wrap
+    if (g_row > 0) {
+      g_row--;
+      g_col = 19; // Go to end of previous line (0-19)
+    } else {
+      // Top-left corner, nowhere to go?
+      // Optionally wrap to end of 4th line, but usually stick at 0,0
+      return;
+    }
+  }
+
+  // 2. Move Cursor to new position
+  LCD_UpdateCursor();
+
+  // 3. Overwrite with Space (This advances cursor)
+  LCD_RS_PIN = 0x08; // Data
+  LCD_WriteByte(' ');
+  LCD_RS_PIN = 0x00;
+
+  // 4. Move Cursor back again (because WriteByte advanced it)
+  LCD_UpdateCursor();
+}
+
 // --- Initialization ---
 
 // Initialize Port A and Port B for LCD Usage
