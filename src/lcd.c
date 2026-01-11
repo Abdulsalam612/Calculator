@@ -173,6 +173,16 @@ void printDisplay(char *str) {
   }
 }
 
+void lcdCreateCustomChar(unsigned char loc, unsigned char *pattern) {
+  if (loc < 8) {
+    // CGRAM address = 0x40 + (Character_Location * 8)
+    lcdWriteCommand(0x40 + (loc * 8));
+    for (int i = 0; i < 8; i++) {
+      lcdWriteData(pattern[i]);
+    }
+  }
+}
+
 // Deletes the previous character (Backspace)
 void lcdBackspace(void) {
   // 1. Decrement Cursor

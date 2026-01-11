@@ -48,9 +48,35 @@ void Password_Init(void) {
     }
   }
 
+  // Load Custom Chars
+  // Lock Icon (Location 0)
+  uint8_t lockChar[] = {0x0E, //  xxx
+                        0x11, // x   x
+                        0x11, // x   x
+                        0x1F, // xxxxx
+                        0x1B, // xx xx
+                        0x1B, // xx xx
+                        0x1F, // xxxxx
+                        0x00};
+  lcdCreateCustomChar(0, lockChar);
+
+  // Unlock Icon (Location 1)
+  uint8_t unlockChar[] = {0x0E, //  xxx
+                          0x01, //     x
+                          0x01, //     x
+                          0x1F, // xxxxx
+                          0x1B, // xx xx
+                          0x1B, // xx xx
+                          0x1F, // xxxxx
+                          0x00};
+  lcdCreateCustomChar(1, unlockChar);
+
   lcdClearScreen();
 
-  printDisplay("--- LOCKED ---");
+  printDisplay("--- LOCKED ");
+  lcdWriteData(0); // Show Lock Icon
+  printDisplay(" ---");
+
   lcdGoto(0x40); // Line 2
   printDisplay("Enter PIN:");
   lcdGoto(0x14); // Line 3
@@ -89,9 +115,11 @@ void Password_Check(char key) {
     if (strcmp(g_enteredPin, g_correctPin) == 0) {
       g_isUnlocked = 1;
       lcdClearScreen();
-      printDisplay("Access Granted!");
+      printDisplay("Access Granted! ");
+      lcdWriteData(1);       // Show Unlock Icon
       SysTick_Wait10ms(100); // 1s delay
       lcdClearScreen();      // Empty Canvas
+
       // printDisplay("Salam Calculator"); // Removed as per request
     } else {
       lcdClearScreen();

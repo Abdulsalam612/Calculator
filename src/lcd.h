@@ -29,6 +29,11 @@ void lcdClearScreen(void);
 void lcdGoto(unsigned char address);
 void printDisplay(char *str);
 void lcdBackspace(void);
+
+// Create Custom Character (0-7 locations)
+// pattern must be 8 bytes
+void lcdCreateCustomChar(unsigned char loc, unsigned char *pattern);
+
 void lcdDelayMs(unsigned long ms);
 
 /* Helper / Extra Functions */
