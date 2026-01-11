@@ -319,9 +319,11 @@ void Calc_ProcessKey(char key) {
           strcpy(&g_inputBuffer[g_bufferIndex], ansStr);
           g_bufferIndex += len;
           printDisplay("Ans");
+          g_shiftActive = 0; // Auto-untoggle
           return;
         }
-        return; // Buffer full
+        g_shiftActive = 0; // Auto-untoggle even if full
+        return;            // Buffer full
       }
 
     case 'B':
@@ -336,7 +338,12 @@ void Calc_ProcessKey(char key) {
     default:
       break;
     }
+
+    // Auto-untoggle Shift (Single Shot)
+    g_shiftActive = 0;
+
   } else {
+
     // NORMAL MAPPINGS
     switch (key) {
     case 'A':
