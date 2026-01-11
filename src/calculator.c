@@ -22,6 +22,7 @@ int is_digit(char c) { return (c >= '0' && c <= '9'); }
 static char g_inputBuffer[MAX_EXPR_LEN];
 static int g_bufferIndex = 0;
 static int g_resetOnNextKey = 0;
+static int g_shiftActive = 0; // 0=Off, 1=On
 
 // Stacks for Evaluation
 static double valStack[MAX_STACK];
@@ -36,6 +37,7 @@ void Calc_Reset(void) {
   lcdClearScreen();
   // Re-print prompt or cursor if needed, but clean slate is good.
   g_resetOnNextKey = 0;
+  g_shiftActive = 0;
 }
 
 // Push value
@@ -70,7 +72,21 @@ int precedence(char op) {
     return 1;
   if (op == '*' || op == '/')
     return 2;
+  if (op == '^')
+    return 3; // Power has higher precedence
   return 0;
+}
+
+// Power Function (basic integer/float power)
+double calc_pow(double base, double exp) {
+  double res = 1.0;
+  int i;
+  // Handle integer positive exponents simply
+  for (i = 0; i < (int)exp; i++)
+    res *= base;
+  return res;
+  // Real implementation should use <math.h> pow() but that might bloat/fail
+  // linking. For now, simple loop is safer for basic implementation.
 }
 
 // Apply Operation
@@ -84,6 +100,8 @@ double applyOp(double a, double b, char op) {
     return a * b;
   case '/':
     return (b != 0) ? (a / b) : 0.0; // Avoid DivByZero crash
+  case '^':
+    return calc_pow(a, b);
   default:
     return 0.0;
   }
@@ -193,26 +211,68 @@ void Calc_ProcessKey(char key) {
   char displayChar = key;
   char bufferChar = key;
 
-  switch (key) {
-  case 'A':
-    bufferChar = '+';
-    displayChar = '+';
-    break;
-  case 'B':
-    bufferChar = '-';
-    displayChar = '-';
-    break;
-  case 'C':
-    bufferChar = '*';
-    displayChar = '*';
-    break; // Multiplication
-  case 'D':
-    bufferChar = '/';
-    displayChar = '/';
-    break; // Division
-  // case '*': removed (now backspace)
-  default:
-    break;
+  // Map Keypad Chars to Operators
+  // Variables declared at start of function (lines 189/190)
+  // char displayChar = key; // REDECLARATION FIX
+  // char bufferChar = key;  // REDECLARATION FIX
+
+  // Reset defaults for this key
+  displayChar = key;
+  bufferChar = key;
+
+  // Handle Shift Key Toggle ('D')
+
+  if (key == 'D') {
+    g_shiftActive = !g_shiftActive;
+    // Visual feedback?
+    // Maybe print 'S' at end of line 4? Or just trust user.
+    // Let's print a small indicator if possible, or just ignore for now.
+    return;
+  }
+
+  if (g_shiftActive) {
+    // SHIFT MAPPINGS
+    switch (key) {
+    case 'A':
+      bufferChar = '.';
+      displayChar = '.';
+      break; // Shift+A = Dot
+    case 'B':
+      bufferChar = '^';
+      displayChar = '^';
+      break; // Shift+B = Power
+    case 'C':
+      bufferChar = '/';
+      displayChar = '/';
+      break; // Shift+C = Divide
+    default:
+      // Other keys ignore shift or treat as normal?
+      // Usually Shift+Number = Number.
+      break;
+    }
+    // Auto-reset shift after one use? Or Sticky?
+    // User said "Shift is toggled", implying sticky.
+    // But typically modifier keys are single use.
+    // Let's make it sticky (Toggle) as requested.
+  } else {
+    // NORMAL MAPPINGS
+    switch (key) {
+    case 'A':
+      bufferChar = '+';
+      displayChar = '+';
+      break;
+    case 'B':
+      bufferChar = '-';
+      displayChar = '-';
+      break;
+    case 'C':
+      bufferChar = '*';
+      displayChar = '*';
+      break;
+    // D is handled above as Toggle
+    default:
+      break;
+    }
   }
 
   // Add to buffer
