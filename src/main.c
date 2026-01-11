@@ -1,18 +1,23 @@
 // main.c
 // Calculator Project
 
-#include "TExaS.h"
+#include "PLL.h"
+#include "SysTick.h"
 #include "keypad.h"
 #include "lcd.h"
 
 int main(void) {
-  // Initialize LCD
+  // System Initialization (80 MHz)
+  SysPLL_Init();
+  SysTick_Init();
+
+  // Initialize Drivers
   lcdInit();
   keypadInit();
 
   // Test: Print 'Salam'
   printDisplay("Salam");
-  lcdDelayMs(1000);
+  SysTick_Wait10ms(100); // Wait 1s
   lcdClearScreen();
 
   while (1) {
@@ -20,7 +25,7 @@ int main(void) {
     if (key != 0) {
       char c = decodeKeyPress(key);
       lcdWriteData(c);
-      lcdDelayMs(200); // Debounce / Avoid repeat
+      SysTick_Wait10ms(20); // Debounce 200ms
     }
   }
 }

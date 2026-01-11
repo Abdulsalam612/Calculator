@@ -72,6 +72,34 @@ void LCD_WriteByte(unsigned char data) {
   lcdDelayUs(37);                     // Default execution time
 }
 
+// --- Cursor Tracking ---
+static unsigned char g_col = 0;
+static unsigned char g_row = 0;
+
+// Updates device cursor to match g_row/g_col
+static void LCD_UpdateCursor(void) {
+  unsigned char addr;
+  switch (g_row) {
+  case 0:
+    addr = 0x00;
+    break;
+  case 1:
+    addr = 0x40;
+    break;
+  case 2:
+    addr = 0x14;
+    break;
+  case 3:
+    addr = 0x54;
+    break;
+  default:
+    addr = 0x00;
+    break;
+  }
+  addr += g_col;
+  lcdWriteCommand(0x80 | addr);
+}
+
 // --- Core Functions ---
 
 // Send an Instruction/Command to the LCD
@@ -81,22 +109,61 @@ void lcdWriteCommand(unsigned char c) {
 }
 
 // Send Data (Character) to the LCD
+// Send Data (Character) to the LCD
 void lcdWriteData(char c) {
   LCD_RS_PIN = 0x08; // RS High (Data)
   LCD_WriteByte((unsigned char)c);
   LCD_RS_PIN = 0x00; // Cleanup
+
+  // Smart Line Wrapping
+  g_col++;
+  if (g_col >= 20) { // Assuming 20x4 display
+    g_col = 0;
+    g_row++;
+    if (g_row >= 4) {
+      g_row = 0; // Wrap back to top
+    }
+    LCD_UpdateCursor();
+  }
 }
 
+// Clear the screen and reset cursor
 // Clear the screen and reset cursor
 void lcdClearScreen(void) {
   lcdWriteCommand(0x01); // Clear Display Command
   lcdDelayMs(2);         // Requires > 1.5ms
+  g_col = 0;
+  g_row = 0;
 }
 
+// Move cursor to specific DDRAM address
 // Move cursor to specific DDRAM address
 void lcdGoto(unsigned char address) {
   // 0x80 is the "Set DDRAM Address" command base
   lcdWriteCommand(0x80 | (address & 0x7F));
+
+  // Note: It's hard to reverse-engineer row/col from address perfectly
+  // if custom addresses are used, but we reset tracking to safest guess
+  // or user should rely on lcdClearScreen() to sync.
+  // For now, we don't update g_row/g_col here to avoid breaking logic if
+  // user knows what they are doing manually.
+  // A better approach would be to calculate it:
+  if (address >= 0x00 && address < 0x14) {
+    g_row = 0;
+    g_col = address;
+  } else if (address >= 0x40 && address < 0x54) {
+    g_row = 1;
+    g_col = address - 0x40;
+  } else if (address >= 0x14 && address < 0x28) {
+    g_row = 2;
+    g_col = address - 0x14;
+  } else if (address >= 0x54 && address < 0x68) {
+    g_row = 3;
+    g_col = address - 0x54;
+  } else {
+    g_col = 0;
+    g_row = 0;
+  } // Fallback
 }
 
 // Print a null-terminated string
@@ -160,9 +227,10 @@ void lcdInit(void) {
   lcdWriteCommand(0x08);
 
   // Clear Screen
-  lcdClearScreen();
+  lcdClearScreen(); // This logic now sets g_col=0, g_row=0
 
   // Entry Mode: Increment cursor, No Shift
+
   lcdWriteCommand(0x06);
 
   // Display Control: Display On, Cursor Off, Blink Off

@@ -401,6 +401,16 @@
               <FilePath>.\src\keypad.c</FilePath>
             </File>
             <File>
+              <FileName>PLL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\PLL.c</FilePath>
+            </File>
+            <File>
+              <FileName>SysTick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\SysTick.c</FilePath>
+            </File>
+            <File>
               <FileName>texas.o</FileName>
               <FileType>3</FileType>
               <FilePath>.\texas.o</FilePath>
