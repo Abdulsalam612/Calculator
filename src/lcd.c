@@ -1,169 +1,170 @@
 /*
  * lcd.c
  * LCD Driver Implementation
+ *
+ * Configures the TM4C123GH6PM to control an HD44780-based LCD via 4-bit mode.
+ * Port A [3:2] -> Control (RS, EN)
+ * Port B [3:0] -> Data (DB4-DB7)
  */
 
 #include "lcd.h"
 
-#define SYSCTL_RCGC2_R (*((volatile unsigned long *)0x400FE108))
-#define GPIO_PORTA_AMSEL_R (*((volatile unsigned long *)0x40004528))
-#define GPIO_PORTA_PCTL_R (*((volatile unsigned long *)0x4000452C))
+// --- Register Definitions ---
+// System Control
+#define SYSCTL_RCGCGPIO_R (*((volatile unsigned long *)0x400FE608))
+#define SYSCTL_PRGPIO_R (*((volatile unsigned long *)0x400FEA08))
+
+// Port A (Control)
 #define GPIO_PORTA_DIR_R (*((volatile unsigned long *)0x40004400))
 #define GPIO_PORTA_AFSEL_R (*((volatile unsigned long *)0x40004420))
 #define GPIO_PORTA_DEN_R (*((volatile unsigned long *)0x4000451C))
 
-#define GPIO_PORTB_AMSEL_R (*((volatile unsigned long *)0x40005528))
-#define GPIO_PORTB_PCTL_R (*((volatile unsigned long *)0x4000552C))
+// Port B (Data)
+#define GPIO_PORTB_DATA_R (*((volatile unsigned long *)0x400053FC))
 #define GPIO_PORTB_DIR_R (*((volatile unsigned long *)0x40005400))
 #define GPIO_PORTB_AFSEL_R (*((volatile unsigned long *)0x40005420))
 #define GPIO_PORTB_DEN_R (*((volatile unsigned long *)0x4000551C))
 
-// Delay function for timing
-void DelayMs(unsigned long ms) {
-  unsigned long i;
+// Bit-Specific Access (Masked Addresses)
+#define LCD_EN_PIN (*((volatile unsigned long *)0x40004010)) // PA2 (0x04)
+#define LCD_RS_PIN (*((volatile unsigned long *)0x40004020)) // PA3 (0x08)
+#define LCD_DATA_PORT                                                          \
+  (*((volatile unsigned long *)0x4000503C)) // PB0-PB3 (0x0F)
+
+// --- Timing Functions ---
+
+// Microsecond delay (approximate for 80MHz clock)
+void lcdDelayUs(unsigned long us) {
+  volatile unsigned long count = us * 13; // Calibrated for overhead
+  while (count > 0) {
+    count--;
+  }
+}
+
+// Millisecond delay
+void lcdDelayMs(unsigned long ms) {
   while (ms > 0) {
-    i = 13333;
-    while (i > 0) {
-      i = i - 1;
-    }
-    ms = ms - 1;
+    lcdDelayUs(1000);
+    ms--;
   }
 }
 
-void DelayUs(unsigned long us) {
-  unsigned long i;
-  while (us > 0) {
-    i = 13;
-    while (i > 0) {
-      i = i - 1;
-    }
-    us = us - 1;
+// --- Low-Level Helpers ---
+
+// Pulse the Enable (EN) pin to latch data
+void lcdENPulse(void) {
+  LCD_EN_PIN = 0x04; // Assert EN (High)
+  lcdDelayUs(1);     // Hold > 450ns
+  LCD_EN_PIN = 0x00; // De-assert EN (Low)
+  lcdDelayUs(1);     // Hold > 450ns
+}
+
+// Send lower 4 bits of 'nibble' to LCD Data pins
+void LCD_SendNibble(unsigned char nibble) {
+  LCD_DATA_PORT = nibble & 0x0F; // Write to PB0-3
+  lcdENPulse();                  // Latch the nibble
+}
+
+// Send a full byte as two nibbles (High then Low)
+void LCD_WriteByte(unsigned char data) {
+  LCD_SendNibble((data >> 4) & 0x0F); // Upper nibble
+  LCD_SendNibble(data & 0x0F);        // Lower nibble
+  lcdDelayUs(37);                     // Default execution time
+}
+
+// --- Core Functions ---
+
+// Send an Instruction/Command to the LCD
+void lcdWriteCommand(unsigned char c) {
+  LCD_RS_PIN = 0x00; // RS Low (Command)
+  LCD_WriteByte(c);
+}
+
+// Send Data (Character) to the LCD
+void lcdWriteData(char c) {
+  LCD_RS_PIN = 0x08; // RS High (Data)
+  LCD_WriteByte((unsigned char)c);
+  LCD_RS_PIN = 0x00; // Cleanup
+}
+
+// Clear the screen and reset cursor
+void lcdClearScreen(void) {
+  lcdWriteCommand(0x01); // Clear Display Command
+  lcdDelayMs(2);         // Requires > 1.5ms
+}
+
+// Move cursor to specific DDRAM address
+void lcdGoto(unsigned char address) {
+  // 0x80 is the "Set DDRAM Address" command base
+  lcdWriteCommand(0x80 | (address & 0x7F));
+}
+
+// Print a null-terminated string
+void printDisplay(char *str) {
+  while (*str) {
+    lcdWriteData(*str++);
   }
 }
 
-void LCD_Init(void) {
+// --- Initialization ---
+
+// Initialize Port A and Port B for LCD Usage
+static void LCD_InitPorts(void) {
   volatile unsigned long delay;
 
-  // Enable Clock for Port A and Port B
-  SYSCTL_RCGC2_R |= 0x03;
-  delay = SYSCTL_RCGC2_R;
+  // 1. Clock Enable
+  SYSCTL_RCGCGPIO_R |= 0x03; // Enable Port A and B
+  delay = SYSCTL_RCGCGPIO_R; // Delay for clock stab.
 
-  // Setup Port A (Control: PA2, PA3)
-  GPIO_PORTA_AMSEL_R &= ~0x0C;
-  GPIO_PORTA_PCTL_R &= ~0x0000FF00;
-  GPIO_PORTA_DIR_R |= 0x0C;
-  GPIO_PORTA_AFSEL_R &= ~0x0C;
-  GPIO_PORTA_DEN_R |= 0x0C;
+  // 2. Port B Config (Data: PB0-PB3)
+  GPIO_PORTB_DIR_R |= 0x0F;    // Output
+  GPIO_PORTB_DEN_R |= 0x0F;    // Digital Enable
+  GPIO_PORTB_AFSEL_R &= ~0x0F; // GPIO
 
-  // Setup Port B (Data: PB0-PB3)
-  GPIO_PORTB_AMSEL_R &= ~0x0F;
-  GPIO_PORTB_PCTL_R &= ~0x0000FFFF;
-  GPIO_PORTB_DIR_R |= 0x0F;
-  GPIO_PORTB_AFSEL_R &= ~0x0F;
-  GPIO_PORTB_DEN_R |= 0x0F;
+  // 3. Port A Config (Control: PA2, PA3)
+  GPIO_PORTA_DIR_R |= 0x0C;    // Output
+  GPIO_PORTA_DEN_R |= 0x0C;    // Digital Enable
+  GPIO_PORTA_AFSEL_R &= ~0x0C; // GPIO
 
-  LCD_EN_PIN = 0;
-  LCD_RS_PIN = 0;
-
-  DelayMs(50); // Power up wait
-
-  // Initialization Sequence
-  LCD_OutNibble(0x03);
-  DelayMs(5);
-  LCD_OutNibble(0x03);
-  DelayUs(100);
-  LCD_OutNibble(0x03);
-  DelayUs(100);
-  LCD_OutNibble(0x02); // 4-bit mode
-  DelayUs(100);
-
-  // Configuration
-  LCD_SendCmd(0x28); // Function Set: 4-bit, 2 lines, 5x7
-  LCD_SendCmd(0x0C); // Display On, Cursor Off, Blink Off
-  LCD_SendCmd(0x06); // Entry Mode: Increment, No Shift
-  LCD_ClearScreen();
+  // 4. Initial State
+  LCD_RS_PIN = 0x00;
+  LCD_EN_PIN = 0x00;
 }
 
-void LCD_OutNibble(byte nibble) {
-  LCD_DATA_PORT = nibble & 0x0F;
+// Main Initialization Routine
+void lcdInit(void) {
+  LCD_InitPorts();
 
-  // Pulse Enable
-  LCD_EN_PIN = 0x04; // PA2 High
-  DelayUs(6);
-  LCD_EN_PIN = 0x00; // PA2 Low
-  DelayUs(6);
-}
+  lcdDelayMs(50); // Power-up wait (> 15ms)
 
-void LCD_SendCmd(byte cmd) {
-  LCD_RS_PIN = 0;          // Command Mode
-  LCD_OutNibble(cmd >> 4); // High nibble
-  LCD_OutNibble(cmd);      // Low nibble
-  DelayMs(2);
-}
+  // Reset Sequence to ensure known state
+  LCD_RS_PIN = 0x00; // Command Mode
 
-void LCD_SendData(byte data) {
-  LCD_RS_PIN = 0x08; // Data Mode (PA3 High)
-  LCD_OutNibble(data >> 4);
-  LCD_OutNibble(data);
-  DelayUs(50);
-  LCD_RS_PIN = 0;
-}
+  // Sync Sequence (0x03 sent 3 times)
+  LCD_SendNibble(0x03);
+  lcdDelayMs(5);
+  LCD_SendNibble(0x03);
+  lcdDelayUs(150);
+  LCD_SendNibble(0x03);
+  lcdDelayUs(150);
 
-void LCD_ClearScreen(void) {
-  LCD_SendCmd(0x01);
-  DelayMs(2);
-}
+  // Switch to 4-bit Mode
+  LCD_SendNibble(0x02);
+  lcdDelayUs(150);
 
-void LCD_ReturnHome(void) {
-  LCD_SendCmd(0x02);
-  DelayMs(2);
-}
+  // Configuration Commands
+  // Function Set: 4-bit, 2-line, 5x8 dots
+  lcdWriteCommand(0x28);
 
-void LCD_SetCursor(byte r, byte c) {
-  byte addr;
-  if (r == 0)
-    addr = 0x80 + c;
-  else if (r == 1)
-    addr = 0xC0 + c;
-  else if (r == 2)
-    addr = 0x94 + c;
-  else
-    addr = 0xD4 + c;
+  // Display Control: Display Off initially
+  lcdWriteCommand(0x08);
 
-  LCD_SendCmd(addr);
-}
+  // Clear Screen
+  lcdClearScreen();
 
-void LCD_PrintChar(char c) { LCD_SendData((byte)c); }
+  // Entry Mode: Increment cursor, No Shift
+  lcdWriteCommand(0x06);
 
-void LCD_PrintString(char *s) {
-  while (*s) {
-    LCD_PrintChar(*s);
-    s++;
-  }
+  // Display Control: Display On, Cursor Off, Blink Off
+  lcdWriteCommand(0x0C);
 }
-
-// Mapped functions for compatibility
-void LCD_SetRegisterSelect(byte rs) {
-  if (rs)
-    LCD_RS_PIN = 0x08;
-  else
-    LCD_RS_PIN = 0;
-}
-void LCD_SendNibble(byte nibble) { LCD_OutNibble(nibble); }
-void LCD_WriteByte(byte b) { LCD_SendData(b); }
-void LCD_Initialize(void) { LCD_Init(); }
-void LCD_Clear(void) { LCD_ClearScreen(); }
-void LCD_Home(void) { LCD_ReturnHome(); }
-void LCD_DisplayControl(byte d, byte c, byte b) {
-  LCD_SendCmd(0x08 | (d << 2) | (c << 1) | b);
-}
-void LCD_ConfigureEntryMode(byte id, byte s) {
-  LCD_SendCmd(0x04 | (id << 1) | s);
-}
-void LCD_ConfigureFunction(byte dl, byte n, byte f) {
-  LCD_SendCmd(0x20 | (dl << 4) | (n << 3) | (f << 2));
-}
-void LCD_SetAddress(byte addr) { LCD_SendCmd(0x80 | addr); }
-void LCD_SetCursorPosition(byte row, byte col) { LCD_SetCursor(row, col); }
-void LCD_WriteChar(char ch) { LCD_PrintChar(ch); }
-void LCD_WriteString(char str[]) { LCD_PrintString(str); }
