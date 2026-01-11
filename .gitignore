@@ -1,0 +1,23 @@
+# Keil uVision
+*.uvoptx
+*.uvguix.*
+*.axf
+*.htm
+*.dep
+*.map
+*.bak
+*.lst
+*.o
+*.d
+*.crf
+*.iex
+*.lnp
+*.sct
+*.build_log.htm
+JLinkLog.txt
+*.scvd
+
+# Folders
+Objects/
+Listings/
+RTE/
