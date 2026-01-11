@@ -1,4 +1,10 @@
+/*
+ * File: Flash.h
+ * Description: Public interface for Flash memory operations.
+ */
+
 #ifndef FLASH_H
+
 #define FLASH_H
 
 #include <stdint.h>

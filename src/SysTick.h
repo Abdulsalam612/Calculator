@@ -1,11 +1,10 @@
 /*
- * SysTick.h
- * SysTick Driver Header File
- * Provides precise busy-wait delays.
+ * File: SysTick.h
+ * Description: Public interface for SysTick delays.
  */
 
-#ifndef SYSTICK_H_
-#define SYSTICK_H_
+#ifndef SYSTICK_H
+#define SYSTICK_H
 
 // Initialize SysTick periodically or just for delays?
 // For this project, we primarily need it for Delays.

@@ -1,3 +1,9 @@
+/*
+ * File: Flash.c
+ * Description: Low-level driver for the TM4C123GH6PM internal Flash memory.
+ *              Supports Erase and Write operations.
+ */
+
 #include "Flash.h"
 
 // TM4C123 Flash Registers

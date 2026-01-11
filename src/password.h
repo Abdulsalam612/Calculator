@@ -1,4 +1,10 @@
+/*
+ * File: password.h
+ * Description: Public interface for the Password module.
+ */
+
 #ifndef PASSWORD_H
+
 #define PASSWORD_H
 
 // Initialize Password Module (Default PIN: 1234)

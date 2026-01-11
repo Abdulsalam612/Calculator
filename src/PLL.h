@@ -1,11 +1,10 @@
 /*
- * PLL.h
- * Phase Lock Loop (PLL) Header File
- * Configures the system clock to 80 MHz.
+ * File: PLL.h
+ * Description: Public interface for PLL initialization.
  */
 
-#ifndef PLL_H_
-#define PLL_H_
+#ifndef PLL_H
+#define PLL_H
 
 // Configures the system clock to run at 80 MHz
 void SysPLL_Init(void);

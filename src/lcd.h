@@ -1,10 +1,10 @@
 /*
- * lcd.h
- * LCD Driver Header File
+ * File: lcd.h
+ * Description: Public interface for the LCD driver.
  */
 
-#ifndef LCD_H_
-#define LCD_H_
+#ifndef LCD_H
+#define LCD_H
 
 /* Hardware Connections */
 /*

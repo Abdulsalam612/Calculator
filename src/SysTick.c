@@ -1,6 +1,6 @@
 /*
- * SysTick.c
- * SysTick Driver Implementation
+ * File: SysTick.c
+ * Description: SysTick Timer Driver for generating precise delays.
  */
 
 #include "SysTick.h"

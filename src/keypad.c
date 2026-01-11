@@ -1,10 +1,7 @@
 /*
- * keypad.c
- * Keypad Driver Implementation
- *
- * Uses Port E (Rows) and Port D (Cols) to scan a 4x4 Matrix Keypad.
- * Rows: PE0-PE3
- * Cols: PD0-PD3
+ * File: keypad.c
+ * Description: Matrix Keypad Driver. Scans a 4x4 keypad connected to
+ *              Port E (Rows) and Port D (Columns).
  */
 
 #include "keypad.h"
@@ -61,7 +58,9 @@ unsigned char readKeypad(void) {
     GPIO_PORTE_DATA_R = (1 << row);
 
     // Brief delay for signal stabilization
-    for (volatile int i = 0; i < 100; i++)
+    // Brief delay for signal stabilization
+    volatile int i;
+    for (i = 0; i < 100; i++)
       ;
 
     // Read Columns (PD0-PD3)

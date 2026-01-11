@@ -1,4 +1,11 @@
+/*
+ * File: password.c
+ * Description: Password management module. Handles PIN validation,
+ *              storage in Flash, and access control logic.
+ */
+
 #include "Flash.h"
+
 #include "SysTick.h"
 #include "keypad.h" // Needed for blocking input
 #include "lcd.h"
@@ -27,16 +34,15 @@ void Password_Init(void) {
     strcpy(g_correctPin, "1234");
   } else {
     // Unpack 4 bytes
-    // We stored as 32-bit int. Let's assume we stored bytes.
-    // E.g. "1234" -> 0x31 32 33 34.
-    // Little Endian: 0x34333231 ?
-    // Let's just treat it as a buffer.
+    // Retrieve PIN from stored word
+
     memcpy(g_correctPin, &storedData, 4);
     g_correctPin[4] = '\0';
 
     // Validation: Check if it's actually 4 digits
     int isValid = 1;
-    for (int i = 0; i < 4; i++) {
+    int i;
+    for (i = 0; i < 4; i++) {
       if (g_correctPin[i] < '0' || g_correctPin[i] > '9') {
         isValid = 0;
         break;
@@ -103,9 +109,8 @@ void Password_Check(char key) {
       lcdWriteData('*');
     }
   }
-  // Handle Delete (Backspace) - reusing '*' as Backspace from Calc logic?
-  // Let's stick to simple logic: '*' key on keypad is mapped to delete in
-  // calculator. Here raw key '*' is used.
+  // Handle Delete (Backspace)
+
   else if (key == '*') {
     if (g_pinIndex > 0) {
       g_pinIndex--;
@@ -125,7 +130,6 @@ void Password_Check(char key) {
       lcdClearScreen();      // Empty Canvas
       lcdCursorBlink();      // Ready for Calc
 
-      // printDisplay("Salam Calculator"); // Removed as per request
     } else {
       lcdClearScreen();
       lcdCursorOff(); // Hide during message

@@ -1,4 +1,10 @@
+/*
+ * File: menu.h
+ * Description: Public interface for the Main Menu and Tutorial.
+ */
+
 #ifndef MENU_H
+
 #define MENU_H
 
 // Displays Main Menu and waits for selection

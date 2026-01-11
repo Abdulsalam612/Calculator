@@ -1,11 +1,11 @@
 /*
- * calculator.h
- * Calculator Logic Header
- * Handles input buffering and expression evaluation.
+ * File: calculator.h
+ * Description: Public interface for the Calculator core.
+ *              Handles input buffering and expression evaluation.
  */
 
-#ifndef CALCULATOR_H_
-#define CALCULATOR_H_
+#ifndef CALCULATOR_H
+#define CALCULATOR_H
 
 // Initialize Calculator (Same as Reset)
 void Calc_Init(void);

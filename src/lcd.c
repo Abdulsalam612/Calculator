@@ -1,10 +1,8 @@
 /*
- * lcd.c
- * LCD Driver Implementation
- *
- * Configures the TM4C123GH6PM to control an HD44780-based LCD via 4-bit mode.
- * Port A [3:2] -> Control (RS, EN)
- * Port B [3:0] -> Data (DB4-DB7)
+ * File: lcd.c
+ * Description: LCD Driver Implementation.
+ *              Configures the TM4C123GH6PM to control an HD44780-based LCD via
+ * 4-bit mode. Port A [3:2] -> Control (RS, EN) Port B [3:0] -> Data (DB4-DB7)
  */
 
 #include "lcd.h"
@@ -118,7 +116,7 @@ void lcdWriteCommand(unsigned char c) {
 }
 
 // Send Data (Character) to the LCD
-// Send Data (Character) to the LCD
+
 void lcdWriteData(char c) {
   LCD_RS_PIN = 0x08; // RS High (Data)
   LCD_WriteByte((unsigned char)c);
@@ -137,7 +135,7 @@ void lcdWriteData(char c) {
 }
 
 // Clear the screen and reset cursor
-// Clear the screen and reset cursor
+
 void lcdClearScreen(void) {
   lcdWriteCommand(0x01); // Clear Display Command
   lcdDelayMs(2);         // Requires > 1.5ms
@@ -146,17 +144,13 @@ void lcdClearScreen(void) {
 }
 
 // Move cursor to specific DDRAM address
-// Move cursor to specific DDRAM address
+
 void lcdGoto(unsigned char address) {
   // 0x80 is the "Set DDRAM Address" command base
   lcdWriteCommand(0x80 | (address & 0x7F));
 
-  // Note: It's hard to reverse-engineer row/col from address perfectly
-  // if custom addresses are used, but we reset tracking to safest guess
-  // or user should rely on lcdClearScreen() to sync.
-  // For now, we don't update g_row/g_col here to avoid breaking logic if
-  // user knows what they are doing manually.
-  // A better approach would be to calculate it:
+  // Calculate Row/Col logic derived from address
+
   if (address >= 0x00 && address < 0x14) {
     g_row = 0;
     g_col = address;

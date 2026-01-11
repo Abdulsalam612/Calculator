@@ -1,7 +1,7 @@
 /*
- * PLL.c
- * Phase Lock Loop (PLL) Implementation
- * Configures the TM4C123 system clock to 80 MHz.
+ * File: PLL.c
+ * Description: Phase Locked Loop (PLL) configuration to set system clock to 80
+ * MHz.
  */
 
 #include "PLL.h"
@@ -15,9 +15,9 @@
 #define SYSCTL_RCC_XTAL_25MHZ                                                  \
   0x00000540 // XTAL Value for 16MHz Crystal (wait, usually Launchpads are
              // 16MHz)
-// Actually, standard TExaS/Launchpad PLL instructions often use 16MHz crystal
-// setting.// 0x15 in XTAL field for 16MHz.
-// Let's use the standard robust Valvano-style PLL init logic.
+// Actually, standard TExaS/Launchpad PLL instructions often use 16MHz
+// crystal setting.// 0x15 in XTAL field for 16MHz. Let's use the standard
+// robust Valvano-style PLL init logic.
 
 void SysPLL_Init(void) {
   // 0) Use RCC2 because it provides more options (like 400MHz PLL)

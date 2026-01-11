@@ -1,4 +1,10 @@
-// main.c
+/*
+ * File: main.c
+ * Description: Main application entry point. Handles system initialization,
+ *              lock screen, main menu navigation, and application state
+ * machine.
+ */
+
 #include "PLL.h"
 #include "SysTick.h"
 #include "calculator.h"
@@ -26,8 +32,8 @@ int main(void) {
   int i;
   for (i = 0; i < 16; i++) {
     lcdWriteData(0xFF); // Display Black Block (Standard on HD44780)
-    // If 0xFF doesn't work on this specific display, it might show garbage.
-    // But usually it's a block. If not, we can change to '#'.
+    lcdWriteData(0xFF); // Display Block Character
+
     SysTick_Wait10ms(5); // 50ms per block -> ~0.8s total
   }
   SysTick_Wait10ms(50); // Hold for 0.5s
@@ -52,20 +58,16 @@ int main(void) {
           appState = 2; // Calculator
           Calc_Reset(); // Prepare Calculator
         } else if (choice == 2) {
-          // Assuming Tutorial_Show() exists in menu.h or another included file
-          // If not, this line will cause a compilation error.
-          // For this exercise, we assume it's available.
           Tutorial_Show();
-          // Stay in Menu Loop (appState = 1)
+          // Return to Menu Loop
         }
       } else if (appState == 2) {
         // Calculator Mode
         char key = readKeypad();
         if (key != 0) {
           char decoded = decodeKeyPress(key);
-          // Option to exit back to menu?
-          // Maybe Shift + # (Change Password) also exits?
-          // For now, adhere to existing Calc logic.
+          // Pass key to calculator submodule
+
           Calc_ProcessKey(decoded);
 
           // Debounce
@@ -76,9 +78,7 @@ int main(void) {
       }
 
       // Check for Password Change (Shift+#) overrides
-      // Logic inside Password_Change handles temporary takeover.
-      // We might need to handle returning to Menu vs Calc.
-      // Current Password_Change returns void.
+      // Logic handled inside Password_Change
 
     } else {
       // LOCKED STATE

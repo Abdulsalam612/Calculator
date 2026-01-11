@@ -1,10 +1,10 @@
 /*
- * keypad.h
- * Keypad Driver Header File
+ * File: keypad.h
+ * Description: Public interface for the Keypad driver.
  */
 
-#ifndef KEYPAD_H_
-#define KEYPAD_H_
+#ifndef KEYPAD_H
+#define KEYPAD_H
 
 // Initializes Port D and Port E for 4x4 Keypad scanning
 void keypadInit(void);

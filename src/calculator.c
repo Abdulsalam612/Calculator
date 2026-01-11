@@ -1,7 +1,7 @@
 /*
- * calculator.c
- * Calculator Core Implementation
- * Uses a Two-Stack Algorithm for operator precedence.
+ * File: calculator.c
+ * Description: Calculator Core Implementation.
+ *              Uses a Shunting-yard algorithm for operator precedence.
  */
 
 #include "calculator.h"
@@ -9,8 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// #include <ctype.h> // Not found in some embedded envs
 
 #define MAX_EXPR_LEN 64
 #define MAX_STACK 32
@@ -47,7 +45,6 @@ int ValidateSyntax(void) {
 
   // Check start
   if (is_operator(g_inputBuffer[0]) && g_inputBuffer[0] != '-') {
-    // Allow leading minus? Maybe. But *5 is error.
     return 1;
   }
 
@@ -68,7 +65,6 @@ int ValidateSyntax(void) {
       lastIsOp = 1;
       lastIsDot = 0;
     } else {
-      // Unknown char? Should not happen with keypad
     }
   }
 
@@ -84,7 +80,8 @@ void Calc_Reset(void) {
   g_bufferIndex = 0;
   memset(g_inputBuffer, 0, MAX_EXPR_LEN);
   lcdClearScreen();
-  // Re-print prompt or cursor if needed, but clean slate is good.
+  lcdClearScreen();
+
   g_resetOnNextKey = 0;
   g_shiftActive = 0;
   lcdCursorBlink(); // Ready for input
@@ -135,8 +132,7 @@ double calc_pow(double base, double exp) {
   for (i = 0; i < (int)exp; i++)
     res *= base;
   return res;
-  // Real implementation should use <math.h> pow() but that might bloat/fail
-  // linking. For now, simple loop is safer for basic implementation.
+  // Basic power implementation
 }
 
 // Apply Operation
@@ -217,9 +213,8 @@ void Calc_Evaluate(void) {
   // Result is at top of valStack
   double result = popVal();
 
-  // Display Result
-  // Move to next line? Or Clear?
-  // Let's print "=" then result on next line or same line if space.
+  // Format Result String
+
   // Given 20x4, let's just create a formatted string.
 
   char outStr[32];
@@ -234,8 +229,6 @@ void Calc_Evaluate(void) {
   // Store Result in Ans
   g_lastAns = result;
 
-  // lcdGoto next line?
-  // Let's just print it. The string has wrapping now.
   lcdCursorOff();       // Hide cursor while showing result
   lcdWriteData(' ');    // Space before equals
   printDisplay(outStr); // Will wrap if needed
@@ -291,8 +284,6 @@ void Calc_ProcessKey(char key) {
   if (key == 'D') {
     g_shiftActive = !g_shiftActive;
     // Visual feedback?
-    // Maybe print 'S' at end of line 4? Or just trust user.
-    // Let's print a small indicator if possible, or just ignore for now.
     return;
   }
 

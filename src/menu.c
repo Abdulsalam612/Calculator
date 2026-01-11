@@ -1,8 +1,13 @@
+/*
+ * File: menu.c
+ * Description: Implementation of the Main Menu and Tutorial system.
+ */
+
 #include "menu.h"
+
 #include "SysTick.h"
 #include "keypad.h"
 #include "lcd.h"
-
 
 // Helper to wait for any key press to continue
 void waitForContinue(void) {
