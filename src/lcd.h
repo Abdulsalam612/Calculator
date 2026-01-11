@@ -28,6 +28,7 @@ void lcdWriteData(char c);
 void lcdClearScreen(void);
 void lcdGoto(unsigned char address);
 void printDisplay(char *str);
+void lcdDelayMs(unsigned long ms);
 
 /* Helper / Extra Functions */
 void lcdENPulse(void);

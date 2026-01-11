@@ -396,6 +396,11 @@
               <FilePath>.\src\lcd.c</FilePath>
             </File>
             <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\keypad.c</FilePath>
+            </File>
+            <File>
               <FileName>texas.o</FileName>
               <FileType>3</FileType>
               <FilePath>.\texas.o</FilePath>
