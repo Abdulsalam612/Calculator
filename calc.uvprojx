@@ -430,11 +430,6 @@
               <FileType>1</FileType>
               <FilePath>.\src\menu.c</FilePath>
             </File>
-            <File>
-              <FileName>texas.o</FileName>
-              <FileType>3</FileType>
-              <FilePath>.\texas.o</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
