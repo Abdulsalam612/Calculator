@@ -11,7 +11,7 @@
 // Returns: 1 for Calculator, 2 for Tutorial
 int Menu_Select(void);
 
-// Runs the Tutorial (blocking until finished)
+// Runs the Tutorial
 void Tutorial_Show(void);
 
 #endif

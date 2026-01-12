@@ -1,7 +1,5 @@
 /*
  * File: calculator.h
- * Description: Public interface for the Calculator core.
- *              Handles input buffering and expression evaluation.
  */
 
 #ifndef CALCULATOR_H

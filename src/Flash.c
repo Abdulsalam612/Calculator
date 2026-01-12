@@ -14,11 +14,7 @@
 #define FLASH_FMC_WRITE 0x00000001
 #define FLASH_FMC_ERASE 0x00000002
 
-void Flash_Init(void) {
-  // No specific initialization needed for basic write/erase
-  // But we could set clock frequency bits if running very fast
-  // Default usually works for 16MHz-80MHz with wait states
-}
+void Flash_Init(void) {}
 
 void Flash_Erase(uint32_t addr) {
   FLASH_FMA_R = addr;
@@ -38,7 +34,7 @@ int Flash_Write(uint32_t addr, uint32_t data) {
   while (FLASH_FMC_R & FLASH_FMC_WRITE)
     ;
 
-  return 0; // Success
+  return 0;
 }
 
 uint32_t Flash_Read(uint32_t addr) {

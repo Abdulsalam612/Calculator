@@ -1,24 +1,23 @@
 /*
  * File: password.c
- * Description: Password management module. Handles PIN validation,
- *              storage in Flash, and access control logic.
+ * Description: Password management module.
  */
 
 #include "Flash.h"
 
 #include "SysTick.h"
-#include "keypad.h" // Needed for blocking input
+#include "keypad.h"
 #include "lcd.h"
 
 #include <stdio.h>
-#include <stdlib.h> // for atoi/strtoul if needed
+#include <stdlib.h>
 #include <string.h>
 
 static int g_isUnlocked = 0;
 
-static char g_enteredPin[5]; // 4 digits + null
+static char g_enteredPin[5]; // 4 digits
 static int g_pinIndex = 0;
-static char g_correctPin[5] = "1234"; // Default PIN (non-const to allow change)
+static char g_correctPin[5] = "1234"; // the Default PIN (allows change)
 
 void Password_Init(void) {
   g_isUnlocked = 0;
@@ -55,7 +54,7 @@ void Password_Init(void) {
   }
 
   // Load Custom Chars
-  // Lock Icon (Location 0)
+  // Lock Icon 
   uint8_t lockChar[] = {0x0E, //  xxx
                         0x11, // x   x
                         0x11, // x   x
@@ -66,7 +65,7 @@ void Password_Init(void) {
                         0x00};
   lcdCreateCustomChar(0, lockChar);
 
-  // Unlock Icon (Location 1)
+  // Unlock Icon 
   uint8_t unlockChar[] = {0x0E, //  xxx
                           0x01, //     x
                           0x01, //     x
@@ -85,7 +84,7 @@ void Password_Init(void) {
 
   printDisplay(" ---");
 
-  lcdGoto(0x40); // Line 2
+  lcdGoto(0x40);
   printDisplay("Enter PIN:");
   lcdGoto(0x14);    // Line 3
   lcdCursorBlink(); // Show cursor for PIN input
@@ -105,7 +104,6 @@ void Password_Check(char key) {
       g_enteredPin[g_pinIndex++] = key;
       g_enteredPin[g_pinIndex] = '\0';
 
-      // Visual Feedback (Masked or Number)
       lcdWriteData('*');
     }
   }
@@ -126,15 +124,15 @@ void Password_Check(char key) {
       lcdCursorOff(); // Hide during message
       printDisplay("Access Granted! ");
       lcdWriteData(1);       // Show Unlock Icon
-      SysTick_Wait10ms(100); // 1s delay
-      lcdClearScreen();      // Empty Canvas
-      lcdCursorBlink();      // Ready for Calc
+      SysTick_Wait10ms(100);
+      lcdClearScreen();
+      lcdCursorBlink();
 
     } else {
       lcdClearScreen();
-      lcdCursorOff(); // Hide during message
+      lcdCursorOff();
       printDisplay("Wrong PIN!");
-      SysTick_Wait10ms(100); // 1s delay
+      SysTick_Wait10ms(100);
 
       // Reset
       g_pinIndex = 0;
@@ -148,7 +146,7 @@ void Password_Check(char key) {
   }
 }
 
-// Blocking function to change password
+// change password
 void Password_Change(void) {
   char newPin[5];
   int idx = 0;
@@ -157,11 +155,10 @@ void Password_Change(void) {
   printDisplay("New PIN:");
   lcdGoto(0x40);
 
-  // Simple blocking loop
   while (1) {
     unsigned char k = readKeypad();
     if (k != 0) {
-      char c = decodeKeyPress(k); // We assume keypad.h is available
+      char c = decodeKeyPress(k);
 
       if (c >= '0' && c <= '9') {
         if (idx < 4) {
@@ -171,29 +168,28 @@ void Password_Change(void) {
       } else if (c == '*' && idx > 0) { // Backspace
         idx--;
         lcdBackspace();
-      } else if (c == '#' && idx == 4) { // Confirm
+      } else if (c == '#' && idx == 4) { 
         newPin[4] = '\0';
         strcpy(g_correctPin, newPin); // Store new PIN
 
         // Save to Flash
         Flash_Erase(FLASH_PASSWORD_ADDR);
-        // Pack 4 bytes into uint32
         uint32_t data = 0;
         memcpy(&data, newPin, 4);
         Flash_Write(FLASH_PASSWORD_ADDR, data);
 
         lcdClearScreen();
-        lcdCursorOff(); // Hide during message
+        lcdCursorOff(); // Hide
         printDisplay("PIN Changed!");
         SysTick_Wait10ms(100);
 
         // Return to Calc
-        lcdClearScreen(); // Empty Canvas
+        lcdClearScreen(); // Empty
         lcdCursorBlink(); // Ready for Calc
         return;
       }
 
-      SysTick_Wait10ms(30); // Debounce
+      SysTick_Wait10ms(30);
 
       while (readKeypad() != 0)
         ; // Wait Release

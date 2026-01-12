@@ -11,10 +11,6 @@
 
 // Helper to display a page and wait for navigation
 // Returns 1 to continue, 0 to exit (if * is pressed)
-// Helper to display a page and wait for navigation
-// Returns: 1=Next, -1=Prev, 0=Exit
-// Helper to display a page and wait for navigation
-// l1 and l2 are content lines. Footer is auto-generated based on pageNum.
 // Returns: 1=Next, -1=Prev, 0=Exit
 int Tutorial_Page(char *title, char *l1, char *l2, int pageNum) {
   lcdClearScreen();

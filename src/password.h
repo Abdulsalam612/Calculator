@@ -7,20 +7,20 @@
 
 #define PASSWORD_H
 
-// Initialize Password Module (Default PIN: 1234)
+// Initialize Password
 void Password_Init(void);
 
 // Process Key Input for Password
 void Password_Check(char key);
 
 // Check if System is Unlocked
-// Returns 1 if Unlocked, 0 if Locked
+// Returns 1 if Unlocked and then 0 if Locked
 int Password_IsUnlocked(void);
 
-// Lock the system (Optional, for re-locking)
+// Lock the system
 void Password_Lock(void);
 
-// Run blocking Change Password Routine
+// Change Password
 void Password_Change(void);
 
 #endif

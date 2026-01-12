@@ -9,13 +9,12 @@
 
 #include <stdint.h>
 
-// Address to store the Password (at 128KB mark)
+// Address to store the Password
 #define FLASH_PASSWORD_ADDR 0x00020000
 
-// Initialize Flash (if needed)
+// Initialize Flash 
 void Flash_Init(void);
 
-// Erase a 1KB Block at the given address
 void Flash_Erase(uint32_t addr);
 
 // Write a 32-bit word to the given address

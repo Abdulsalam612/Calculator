@@ -7,11 +7,7 @@
 #define LCD_H
 
 /* Hardware Connections */
-/*
- * Control Lines (Port A):
- * EN -> PA2
- * RS -> PA3
- */
+
 #define LCD_EN_PIN (*((volatile unsigned long *)0x40004010))
 #define LCD_RS_PIN (*((volatile unsigned long *)0x40004020))
 
@@ -33,13 +29,13 @@ void lcdBackspace(void);
 void lcdCursorBlink(void);
 void lcdCursorOff(void);
 
-// Create Custom Character (0-7 locations)
+//Custom Character
 // pattern must be 8 bytes
 void lcdCreateCustomChar(unsigned char loc, unsigned char *pattern);
 
 void lcdDelayMs(unsigned long ms);
 
-/* Helper / Extra Functions */
+
 void lcdENPulse(void);
 
 #endif /* LCD_H_ */

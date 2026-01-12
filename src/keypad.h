@@ -9,7 +9,7 @@
 // Initializes Port D and Port E for 4x4 Keypad scanning
 void keypadInit(void);
 
-// Scans the keypad and returns the unique key code (or 0 if none)
+// Scans the keypad and returns the unique key code
 unsigned char readKeypad(void);
 
 // Converts the unique key code to an ASCII character

@@ -1,8 +1,6 @@
 /*
  * File: main.c
- * Description: Main application entry point. Handles system initialization,
- *              lock screen, main menu navigation, and application state
- * machine.
+ * Description: Main application
  */
 
 #include "PLL.h"
@@ -14,7 +12,7 @@
 #include "password.h"
 
 int main(void) {
-  // System Initialization (80 MHz)
+  // System Initialization
   SysPLL_Init();
   SysTick_Init();
 
@@ -29,13 +27,13 @@ int main(void) {
   printDisplay("Loading...");
   lcdGoto(0x40); // 2nd Line
 
-  // Progress Bar Animation (Fill remaining 3 lines = 60 chars)
+  // Progress Bar Animation
   int i;
   for (i = 0; i < 60; i++) {
     lcdWriteData(0xFF);  // Display Block Character
     SysTick_Wait10ms(2); // 20ms per block -> 1.2s total
   }
-  SysTick_Wait10ms(50); // Hold for 0.5s
+  SysTick_Wait10ms(50);
 
   // Then Lock
   Password_Init(); // Clears screen and shows LOCKED
@@ -82,8 +80,7 @@ int main(void) {
         }
       }
 
-      // Check for Password Change (Shift+#) overrides
-      // Logic handled inside Password_Change
+      // Check for Password Change 
 
     } else {
       // LOCKED STATE

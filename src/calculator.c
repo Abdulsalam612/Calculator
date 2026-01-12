@@ -1,7 +1,7 @@
 /*
  * File: calculator.c
  * Description: Calculator Core Implementation.
- *              Uses a Shunting-yard algorithm for operator precedence.
+ Using a Shunting-yard algorithm (;
  */
 
 #include "calculator.h"
@@ -27,7 +27,7 @@ static int valTop = -1;
 static char opStack[MAX_STACK];
 static int opTop = -1;
 
-// Helper for isdigit (renamed to avoid conflict)
+// Helper for isdigit (implementation)
 int my_isdigit(char c) { return (c >= '0' && c <= '9'); }
 
 int is_operator(char c) {
@@ -68,7 +68,7 @@ int ValidateSyntax(void) {
     }
   }
 
-  // Ends with operator? 5+ is error
+  // Ends with operator. 5+ is error
   if (lastIsOp)
     return 1;
 
@@ -124,15 +124,13 @@ int precedence(char op) {
   return 0;
 }
 
-// Power Function (basic integer/float power)
+// Power Function
 double calc_pow(double base, double exp) {
   double res = 1.0;
   int i;
-  // Handle integer positive exponents simply
   for (i = 0; i < (int)exp; i++)
     res *= base;
   return res;
-  // Basic power implementation
 }
 
 // Apply Operation
@@ -215,11 +213,9 @@ void Calc_Evaluate(void) {
 
   // Format Result String
 
-  // Given 20x4, let's just create a formatted string.
-
   char outStr[32];
 
-  // Check if integer (cleaner output)
+  // Check if integer
   if (result == (long)result) {
     sprintf(outStr, "= %ld", (long)result);
   } else {
@@ -231,7 +227,7 @@ void Calc_Evaluate(void) {
 
   lcdCursorOff();       // Hide cursor while showing result
   lcdWriteData(' ');    // Space before equals
-  printDisplay(outStr); // Will wrap if needed
+  printDisplay(outStr);
 
   g_resetOnNextKey = 1; // Flag to clear on next input
 }
@@ -270,10 +266,6 @@ void Calc_ProcessKey(char key) {
   char displayChar = key;
   char bufferChar = key;
 
-  // Map Keypad Chars to Operators
-  // Variables declared at start of function (lines 189/190)
-  // char displayChar = key; // REDECLARATION FIX
-  // char bufferChar = key;  // REDECLARATION FIX
 
   // Reset defaults for this key
   displayChar = key;
@@ -283,7 +275,7 @@ void Calc_ProcessKey(char key) {
 
   if (key == 'D') {
     g_shiftActive = !g_shiftActive;
-    // Visual feedback?
+    // Toggle Shift
     return;
   }
 
@@ -296,7 +288,7 @@ void Calc_ProcessKey(char key) {
       break; // Shift+0 = Dot
 
     case 'A':
-      // Shift+A = Ans (Recall)
+      // Shift+A = Ans
       {
         char ansStr[32];
         int len;
@@ -316,7 +308,7 @@ void Calc_ProcessKey(char key) {
           return;
         }
         g_shiftActive = 0; // Auto-untoggle even if full
-        return;            // Buffer full
+        return;
       }
 
     case 'B':
@@ -332,8 +324,12 @@ void Calc_ProcessKey(char key) {
       break;
     }
 
-    // Auto-untoggle Shift (Single Shot)
+
+
+
+    // Auto-untoggle Shift
     g_shiftActive = 0;
+
 
   } else {
 
@@ -356,12 +352,12 @@ void Calc_ProcessKey(char key) {
     }
   }
 
-  // Add to buffer
+
+
   if (g_bufferIndex < MAX_EXPR_LEN - 1) {
     g_inputBuffer[g_bufferIndex++] = bufferChar;
     g_inputBuffer[g_bufferIndex] = '\0';
 
-    // Echo to LCD
     lcdWriteData(displayChar);
   }
 }
