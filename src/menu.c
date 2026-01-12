@@ -9,19 +9,50 @@
 #include "keypad.h"
 #include "lcd.h"
 
-// Helper to wait for any key press to continue
-void waitForContinue(void) {
-  lcdGoto(0x54); // Line 4
-  printDisplay("Press Any Key...");
+// Helper to display a page and wait for navigation
+// Returns 1 to continue, 0 to exit (if * is pressed)
+// Helper to display a page and wait for navigation
+// Returns: 1=Next, -1=Prev, 0=Exit
+// Helper to display a page and wait for navigation
+// l1 and l2 are content lines. Footer is auto-generated based on pageNum.
+// Returns: 1=Next, -1=Prev, 0=Exit
+int Tutorial_Page(char *title, char *l1, char *l2, int pageNum) {
+  lcdClearScreen();
+  printDisplay(title);
+
+  if (l1) {
+    lcdGoto(0x40); // Line 2
+    printDisplay(l1);
+  }
+  if (l2) {
+    lcdGoto(0x14); // Line 3
+    printDisplay(l2);
+  }
+
+  // Footer (Line 4)
+  lcdGoto(0x54);
+  printDisplay("      Page ");
+  lcdWriteData('0' + pageNum);
 
   // Wait for key press
-  while (readKeypad() == 0)
-    ;
-  // Wait for release
-  while (readKeypad() != 0)
-    ;
+  while (1) {
+    unsigned char k = readKeypad();
+    if (k != 0) {
+      char c = decodeKeyPress(k);
 
-  lcdClearScreen();
+      // Wait for release
+      while (readKeypad() != 0)
+        ;
+
+      if (c == '0')
+        return 0; // Exit
+      if (c == '#')
+        return 1; // Next
+      if (c == '*')
+        return -1; // Prev
+    }
+    SysTick_Wait10ms(5);
+  }
 }
 
 int Menu_Select(void) {
@@ -55,35 +86,50 @@ int Menu_Select(void) {
 }
 
 void Tutorial_Show(void) {
-  // Page 1: Basics
-  lcdClearScreen();
-  printDisplay("--- Tutorial 1/3 ---");
-  lcdGoto(0x40);
-  printDisplay("* = Backspace");
-  lcdGoto(0x14);
-  printDisplay("D = Shift (Toggle)");
-  waitForContinue();
+  int page = 1;
+  int result = 0;
 
-  // Page 2: Shift Functions
-  lcdClearScreen();
-  printDisplay("--- Tutorial 2/3 ---");
-  lcdGoto(0x40);
-  printDisplay("Shift+0 = .(Dot)");
-  lcdGoto(0x14);
-  printDisplay("Shift+A = Ans");
-  waitForContinue();
+  while (page >= 1 && page <= 5) {
+    switch (page) {
+    case 1:
+      // Controls Page
+      result = Tutorial_Page("Tutorial Controls", "*:Back #:Next", "0:Exit", 1);
+      break;
+    case 2:
+      // Basic Ops
+      result = Tutorial_Page("Basic Keys", "A:+ B:- C:*", "D:Shift", 2);
+      break;
+    case 3:
+      // Control Keys
+      result = Tutorial_Page("Other Keys", "*:Backspace", "#:Evaluate", 3);
+      break;
+    case 4:
+      // Shift Ops 1
+      result =
+          Tutorial_Page("Shift Ops 1", "Sh+A:Ans Sh+B:^", "Sh+C:Div (/)", 4);
+      break;
+    case 5:
+      // Shift Ops 2
+      result =
+          Tutorial_Page("Shift Ops 2", "Sh+0:Dot (.)", "Sh+#:Change PIN", 5);
+      break;
+    }
 
-  // Page 3: More Shift
-  lcdClearScreen();
-  printDisplay("--- Tutorial 3/3 ---");
-  lcdGoto(0x40);
-  printDisplay("Shift+B = Power (^)");
-  lcdGoto(0x14);
-  printDisplay("Shift+C = Divide (/)");
-  waitForContinue();
+    if (result == 0)
+      break; // Exit
+    if (result == 1)
+      page++;
+    if (result == -1)
+      page--;
+
+    // Boundary
+    if (page < 1)
+      page = 1; // Can't go before 1
+  }
 
   // End
   lcdClearScreen();
-  printDisplay("End of Tutorial");
+  lcdCursorOff();
+  printDisplay("Exiting Tutorial...");
   SysTick_Wait10ms(100);
 }
