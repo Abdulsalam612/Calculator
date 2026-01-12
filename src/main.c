@@ -67,7 +67,13 @@ int main(void) {
           char decoded = decodeKeyPress(key);
           // Pass key to calculator submodule
 
-          Calc_ProcessKey(decoded);
+          // Check for Shortcuts
+          if (decoded == '#' && Calc_IsShiftActive()) {
+            Password_Change();
+            Calc_Reset(); // Restore Calculator UI after return
+          } else {
+            Calc_ProcessKey(decoded);
+          }
 
           // Debounce
           SysTick_Wait10ms(20);
